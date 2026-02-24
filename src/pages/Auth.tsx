@@ -7,6 +7,9 @@ import { toast } from "sonner";
 import { Link } from "react-router-dom";
 import tarboLogo from "@/assets/tarbo-logo.png";
 
+const configuredRedirectUrl = import.meta.env.VITE_AUTH_REDIRECT_URL || `${window.location.origin}/auth/callback`;
+const supabaseCallbackUrl = `${import.meta.env.VITE_SUPABASE_URL}/auth/v1/callback`;
+
 const Auth = () => {
   const [loadingProvider, setLoadingProvider] = useState<"google" | "apple" | null>(null);
 
@@ -57,6 +60,14 @@ const Auth = () => {
               Sign in with Google or Apple to continue shopping
             </p>
           </div>
+
+          <p className="text-xs text-muted-foreground mb-4">
+            If Google sign-in fails with <span className="font-medium">redirect_uri_mismatch</span>, add
+            <span className="font-mono"> {supabaseCallbackUrl} </span>
+            in Google OAuth Authorized Redirect URIs and add
+            <span className="font-mono"> {configuredRedirectUrl} </span>
+            in Supabase Auth Redirect URLs.
+          </p>
 
           <div className="space-y-4">
             <button

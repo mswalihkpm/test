@@ -20,22 +20,29 @@ export const useAuth = () => {
   return context;
 };
 
+const resolveAuthRedirectUrl = () => {
+  const configuredRedirectUrl = import.meta.env.VITE_AUTH_REDIRECT_URL;
+  if (configuredRedirectUrl) {
+    return configuredRedirectUrl;
+  }
+
+  return `${window.location.origin}/auth/callback`;
+};
+
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Set up auth state listener FIRST
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (event, session) => {
+      (_event, session) => {
         setSession(session);
         setUser(session?.user ?? null);
         setLoading(false);
       }
     );
 
-    // THEN check for existing session
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
       setUser(session?.user ?? null);
@@ -46,14 +53,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   }, []);
 
   const signInWithProvider = async (provider: "google" | "apple") => {
-    const redirectUrl = `${window.location.origin}/`;
-
     const { error } = await supabase.auth.signInWithOAuth({
       provider,
       options: {
-        redirectTo: redirectUrl,
+        redirectTo: resolveAuthRedirectUrl(),
       },
     });
+
     return { error };
   };
 
